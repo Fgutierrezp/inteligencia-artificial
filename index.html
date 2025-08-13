@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Fundamentos de Inteligencia Artificial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid #D1D5DB;
+            background-color: white;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #F3F4F6;
+            border-color: #6B7280;
+        }
+        .btn.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+            color: #065F46;
+        }
+        .btn.incorrect {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+        .btn:disabled {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div id="quiz-container" class="max-w-2xl w-full">
+        <!-- Pantalla de Inicio -->
+        <div id="start-screen" class="card text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Quiz: Fundamentos de IA</h1>
+            <p class="text-gray-600 mb-6">Pon a prueba tus conocimientos sobre Inteligencia Artificial.</p>
+            <button id="start-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors">
+                Comenzar Cuestionario
+            </button>
+        </div>
+
+        <!-- Pantalla del Cuestionario -->
+        <div id="question-screen" class="card hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800" id="question-title"></h2>
+                <span id="question-counter" class="text-sm font-semibold text-gray-500"></span>
+            </div>
+            <p class="text-lg text-gray-700 mb-6" id="question-text"></p>
+            <div id="answer-buttons"></div>
+            <div id="feedback-container" class="mt-6 p-4 rounded-lg hidden">
+                 <p id="feedback-text" class="text-sm"></p>
+            </div>
+            <button id="next-btn" class="w-full mt-6 bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors hidden">
+                Siguiente
+            </button>
+        </div>
+
+        <!-- Pantalla de Resultados -->
+        <div id="result-screen" class="card text-center hidden">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">¡Cuestionario Completado!</h1>
+            <p class="text-lg text-gray-600 mb-6">Tu puntuación final es:</p>
+            <div class="bg-indigo-100 rounded-full w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                <span id="score" class="text-4xl font-bold text-indigo-700"></span>
+            </div>
+            <button id="restart-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors">
+                Volver a Intentar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const quizData = [
+            {
+                question: "¿Cuál es el paso final en el proceso de entrenamiento de un algoritmo, justo antes de aplicarlo en áreas como la logística, según el texto?",
+                answers: [
+                    { text: "La computadora elabora la tarea repetidamente.", correct: false, rationale: "Este es un paso intermedio del proceso de aprendizaje, pero no el último antes de la validación." },
+                    { text: "El desarrollador analiza el desempeño hasta que alcanza un nivel óptimo.", correct: true, rationale: "Esta supervisión y validación por parte del desarrollador es el paso crucial que determina que el entrenamiento ha sido exitoso antes de su implementación." },
+                    { text: "Se generan redes artificiales para tomar decisiones.", correct: false, rationale: "La generación de redes es una técnica, no el paso final del proceso de entrenamiento descrito." },
+                    { text: "El algoritmo se aplica directamente en diferentes áreas.", correct: false, rationale: "La aplicación ocurre como resultado de un entrenamiento exitoso, no como el paso final del entrenamiento en sí." }
+                ]
+            },
+            {
+                question: "El texto menciona que el Aprendizaje Automático se basa en algoritmos matemáticos para que las máquinas puedan...",
+                answers: [
+                    { text: "Imitar la conectividad del cerebro humano.", correct: false, rationale: "Esta descripción corresponde específicamente al Aprendizaje Profundo, que utiliza redes neuronales." },
+                    { text: "Interactuar con las personas a través del lenguaje natural.", correct: false, rationale: "Esta es una característica general de la IA, mientras que la pregunta se refiere a la función específica de los algoritmos de Aprendizaje Automático." },
+                    { text: "Procesar datos, adquirir conocimiento y realizar predicciones.", correct: true, rationale: "El texto define la función del Aprendizaje Automático como el uso de algoritmos para procesar información, aprender de ella y predecir resultados." },
+                    { text: "Reducir tiempos para obtener resultados confiables.", correct: false, rationale: "Este es un beneficio o resultado de la IA, no la función central de los algoritmos de Aprendizaje Automático como se describe." }
+                ]
+            },
+            {
+                question: "¿Qué aplicación específica de la IA se menciona en el texto para realizar procedimientos en el sector industrial o de la construcción?",
+                answers: [
+                    { text: "Chatbots.", correct: false, rationale: "Los chatbots se utilizan para la interacción conversacional, no para realizar tareas físicas industriales." },
+                    { text: "Asistentes virtuales.", correct: false, rationale: "Los asistentes virtuales son sistemas de software para ayudar con tareas digitales, no para la construcción." },
+                    { text: "Robots.", correct: true, rationale: "El texto cita explícitamente a los robots como la técnica utilizada para procedimientos industriales, médicos o de construcción." },
+                    { text: "Procesadores de texto.", correct: false, rationale: "Los procesadores de texto son herramientas de software para la edición de documentos, no para tareas de construcción." }
+                ]
+            },
+            {
+                question: "¿Cuál es el principal objetivo social que persigue la inteligencia artificial, según el texto?",
+                answers: [
+                    { text: "Crear modelos de redes neuronales complejos.", correct: false, rationale: "Este es un medio técnico para lograr un fin, no el objetivo social último." },
+                    { text: "Generar cambios positivos en las condiciones de vida y trabajo.", correct: true, rationale: "El texto afirma que se busca que la IA genere un impacto transformador que mejore las condiciones de vida y fomente el crecimiento." },
+                    { text: "Resolver problemas de manera rápida y eficiente.", correct: false, rationale: "Esta es una característica funcional de la IA, pero el objetivo social descrito es más amplio y centrado en el bienestar." },
+                    { text: "Analizar información basada en datos.", correct: false, rationale: "Este es un proceso que la IA realiza, no el propósito social final que se busca alcanzar." }
+                ]
+            },
+            {
+                question: "El texto describe una tensión o paradoja en el desarrollo de la IA. ¿En qué consiste?",
+                answers: [
+                    { text: "Su objetivo es un impacto social transformador, pero su desarrollo está al alcance de muy pocos.", correct: true, rationale: "El texto destaca esta contradicción entre el amplio objetivo social de la IA y el acceso limitado a su desarrollo." },
+                    { text: "Busca imitar el pensamiento humano, pero solo puede procesar datos matemáticos.", correct: false, rationale: "Aunque es un desafío técnico, el texto no lo presenta como la principal paradoja social." },
+                    { text: "Incrementa la productividad, pero elimina puestos de trabajo.", correct: false, rationale: "El texto se enfoca en los beneficios de productividad e innovación, sin mencionar explícitamente la eliminación de empleos como una paradoja." },
+                    { text: "Es muy eficiente para resolver problemas, pero muy lenta para aprender.", correct: false, rationale: "El texto no sugiere que el aprendizaje sea lento, sino que ocurre a través de la repetición." }
+                ]
+            },
+            {
+                question: "¿Cómo describe el texto la relación entre Aprendizaje Automático y Aprendizaje Profundo?",
+                answers: [
+                    { text: "Son dos disciplinas completamente separadas y sin relación.", correct: false, rationale: "El texto contradice esto al afirmar que juntos forman una misma disciplina." },
+                    { text: "Son dos campos que en conjunto forman una misma disciplina.", correct: true, rationale: "Esta es la descripción exacta que proporciona el texto, presentándolos como componentes de la IA." },
+                    { text: "El Aprendizaje Automático es una técnica del Aprendizaje Profundo.", correct: false, rationale: "La relación es a la inversa; el Aprendizaje Profundo es una especialización dentro del campo más amplio del Aprendizaje Automático." },
+                    { text: "El Aprendizaje Profundo ha reemplazado por completo al Aprendizaje Automático.", correct: false, rationale: "El texto los presenta como campos coexistentes que componen la IA, no como uno que reemplaza al otro." }
+                ]
+            }
+        ];
+
+        // Elementos de la interfaz
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+
+        const startBtn = document.getElementById('start-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const restartBtn = document.getElementById('restart-btn');
+
+        const questionTitleEl = document.getElementById('question-title');
+        const questionCounterEl = document.getElementById('question-counter');
+        const questionTextEl = document.getElementById('question-text');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        const feedbackContainerEl = document.getElementById('feedback-container');
+        const feedbackTextEl = document.getElementById('feedback-text');
+        const scoreEl = document.getElementById('score');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Iniciar el cuestionario
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            setNextQuestion();
+        });
+        restartBtn.addEventListener('click', startQuiz);
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            startScreen.classList.add('hidden');
+            resultScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            nextBtn.classList.add('hidden');
+            setNextQuestion();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion(quizData[currentQuestionIndex]);
+            } else {
+                showResults();
+            }
+        }
+
+        function showQuestion(question) {
+            questionTitleEl.innerText = `Pregunta ${currentQuestionIndex + 1}`;
+            questionCounterEl.innerText = `${currentQuestionIndex + 1} / ${quizData.length}`;
+            questionTextEl.innerText = question.question;
+            question.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.classList.add('btn');
+                if (answer.correct) {
+                    button.dataset.correct = answer.correct;
+                }
+                button.dataset.rationale = answer.rationale;
+                button.addEventListener('click', selectAnswer);
+                answerButtonsEl.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            nextBtn.classList.add('hidden');
+            feedbackContainerEl.classList.add('hidden');
+            while (answerButtonsEl.firstChild) {
+                answerButtonsEl.removeChild(answerButtonsEl.firstChild);
+            }
+        }
+
+
+
+        function selectAnswer(e) {
+            const selectedBtn = e.target;
+            const isCorrect = selectedBtn.dataset.correct === 'true';
+
+            if (isCorrect) {
+                score++;
+            }
+            
+            // Mostrar feedback
+            feedbackContainerEl.classList.remove('hidden');
+            feedbackTextEl.innerText = selectedBtn.dataset.rationale;
+            if(isCorrect){
+                feedbackContainerEl.classList.remove('bg-red-100');
+                feedbackContainerEl.classList.add('bg-green-100');
+            } else {
+                feedbackContainerEl.classList.remove('bg-green-100');
+                feedbackContainerEl.classList.add('bg-red-100');
+            }
+
+
+            Array.from(answerButtonsEl.children).forEach(button => {
+                setStatusClass(button, button.dataset.correct === 'true');
+                button.disabled = true; // Deshabilitar botones
+            });
+
+            if (quizData.length > currentQuestionIndex + 1) {
+                nextBtn.classList.remove('hidden');
+            } else {
+                // Si es la última pregunta, mostrar el botón de resultados
+                nextBtn.innerText = 'Ver Resultados';
+                nextBtn.classList.remove('hidden');
+                nextBtn.onclick = showResults; // Cambiar el evento para mostrar resultados
+            }
+        }
+
+        function setStatusClass(element, correct) {
+            clearStatusClass(element);
+            if (correct) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+            }
+        }
+
+        function clearStatusClass(element) {
+            element.classList.remove('correct');
+            element.classList.remove('incorrect');
+        }
+
+        function showResults() {
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            scoreEl.innerText = `${score} / ${quizData.length}`;
+            // Restaurar botón "Siguiente" para el reinicio
+            nextBtn.innerText = 'Siguiente';
+            nextBtn.onclick = () => {
+                currentQuestionIndex++;
+                setNextQuestion();
+            };
+        }
+
+    </script>
+</body>
+</html>
